@@ -16,14 +16,31 @@ const filteredAddresses = data => {
     }
     const list = data[1].data;
     return list.filter(item => {
-        return item.length > 1 && item[6] === 'П' && item[1] !== 'См. на сайте' && (!item[1].includes('Адрес'));
+        return item.length > 1 && item[3] === 'прямой' && item[1] !== 'См. на сайте' && (!item[1].includes('Адрес'));
     });
 };
 
+const addressFormat = address => {
+    const clearedList = address.replace(/\(.+\)/, '').replace(/тел\..+/, '');
+    const splittedAddress = clearedList.split(';');
+    if (splittedAddress.length > 1) {
+        const city = splittedAddress[0].split(',')[0];
+        const addressList = splittedAddress.map((item, index) => {
+            if (index > 0) {
+                item = `${city} ${item}`;
+            }
+            return item;
+        });
+        return addressList;
+    }
+    return clearedList;
+};
+
 const getAddresses = data => {
-    return data.map(item => {
-        return item[1];
+    let dataList = data.map(item => {
+        return addressFormat(item[1]);
     });
+    return dataList.reduce((sum, current) => sum.concat(current), []);
 };
 
 const filteredData = filteredAddresses(workSheetsFromBuffer);
