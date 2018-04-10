@@ -10,6 +10,10 @@ const app = express();
 const port = process.env.PORT || 5000;
 const workSheetsFromBuffer = xlsx.parse(fs.readFileSync(`${__dirname}/data.xlsx`));
 
+if (process.env.NODE_ENV === 'production') {
+    app.use(express.static('client/build'));
+}
+
 const filteredAddresses = data => {
     if (!data) {
         return;
