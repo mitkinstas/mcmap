@@ -67,7 +67,7 @@ const composeData = (addresses, organisations) => {
     return addresses.reduce((sum, current, index) => {
         sum.push({
             coordinates: current.geometry.coordinates,
-            name: `Название: ${organisations[index]}`
+            name: `Название: ${organisations[index].name}`
         });
         return sum;
     }, []);
