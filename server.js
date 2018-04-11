@@ -4,6 +4,7 @@ const geocoder = new MultiGeocoder({
     coordorder: 'latlong',
     lang: 'ru-RU'
 });
+const provider = geocoder.getProvider();
 const fs = require('fs');
 const xlsx = require('node-xlsx').default;
 const app = express();
@@ -26,7 +27,9 @@ const filteredAddresses = data => {
     });
 };
 
-const addressFormat = address => {
+const addressFormat = orgData => {
+    const name = orgData[0];
+    const address = orgData[1];
     const clearedList = address.replace(/\(.+\)/, '').replace(/тел\..+/, '');
     const splittedAddress = clearedList.split(';');
     if (splittedAddress.length > 1) {
@@ -35,16 +38,16 @@ const addressFormat = address => {
             if (index > 0) {
                 item = `${city} ${item}`;
             }
-            return item;
+            return {address: item, name: name};
         });
         return addressList;
     }
-    return clearedList;
+    return {address: clearedList, name: name};
 };
 
 const getAddresses = data => {
     let dataList = data.map(item => {
-        return addressFormat(item[1]);
+        return addressFormat(item);
     });
     return dataList.reduce((sum, current) => sum.concat(current), []);
 };
@@ -52,24 +55,37 @@ const getAddresses = data => {
 const filteredData = filteredAddresses(workSheetsFromBuffer);
 const preparedData = getAddresses(filteredData);
 
+// fs.writeFile('./data.json', JSON.stringify(preparedData, null, 4), err => {
+//     if (err) {
+//         console.error(err);
+//         return;
+//     };
+//     console.log('File has been created');
+// });
+
 const composeData = (addresses, organisations) => {
     return addresses.reduce((sum, current, index) => {
         sum.push({
             coordinates: current.geometry.coordinates,
-            name: `Адрес: ${current.properties.name}`
+            name: `Название: ${organisations[index]}`
         });
         return sum;
     }, []);
 };
 
-const geoCode = async data => {
+const geoCode = data => {
     return geocoder.geocode(data);
+};
+
+provider.getText = function (point) { 
+    const address = point.address;  
+    return address;
 };
 
 app.get('/api/xlsx', (req, res) => {
     const query = geoCode(preparedData);
     query.then(response => {
-        res.send({express: composeData(response.result.features, filteredData)});
+        res.send({express: composeData(response.result.features, preparedData)});
     });
 });
 app.listen(port, () => console.log(`Listening on port ${port}`));
