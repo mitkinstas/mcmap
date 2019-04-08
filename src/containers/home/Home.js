@@ -1,9 +1,9 @@
 import React from 'react';
-import {connect} from 'react-redux';
-import {bindActionCreators} from 'redux';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 import { YMaps, Map, Placemark } from 'react-yandex-maps';
 
-import {organizationsActions} from '../../redux/example';
+import { organizationsActions } from '../../redux/example';
 import './Home.css';
 
 class Home extends React.Component {
@@ -56,12 +56,14 @@ class Home extends React.Component {
                         balloonContent: org.name
                     }}
                     options={{
-                        iconLayout: 'default#image'
+                        preset: 'islands#glyphIcon',
+                        iconGlyph: 'home',
+                        iconGlyphColor: 'blue'
                     }}
                 />
             );
-        })
-    }
+        });
+    };
 }
 
 const mapStateToProps = state => ({
@@ -72,4 +74,7 @@ const mapDispatchToProps = dispatch => ({
     organizationsActions: bindActionCreators(organizationsActions, dispatch)
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(Home);
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(Home);
